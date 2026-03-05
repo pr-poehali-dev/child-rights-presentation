@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Icon from "@/components/ui/icon";
+import { generatePptx } from "@/lib/generatePptx";
 
 interface SlideData {
   id: number;
@@ -170,6 +171,16 @@ export default function Index() {
   const [current, setCurrent] = useState(0);
   const [dir, setDir] = useState(1);
   const [visible, setVisible] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await generatePptx(slides);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const go = useCallback((d: number) => {
     const next = current + d;
@@ -198,14 +209,24 @@ export default function Index() {
       {/* Top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 bg-white border-b border-gray-100">
         <span className="text-sm text-gray-400 font-body">Права ребёнка</span>
-        <div className="flex items-center gap-3">
-          <div className="w-40 h-1 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-500"
-              style={{ width: `${((current + 1) / slides.length) * 100}%` }}
-            />
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-40 h-1 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                style={{ width: `${((current + 1) / slides.length) * 100}%` }}
+              />
+            </div>
+            <span className="text-sm text-gray-400">{current + 1} / {slides.length}</span>
           </div>
-          <span className="text-sm text-gray-400">{current + 1} / {slides.length}</span>
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
+          >
+            <Icon name={downloading ? "Loader" : "Download"} size={14} className={downloading ? "animate-spin" : ""} />
+            {downloading ? "Создаю..." : "Скачать .pptx"}
+          </button>
         </div>
       </div>
 
